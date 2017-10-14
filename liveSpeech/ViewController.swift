@@ -13,6 +13,11 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var textDisplay: UITextView!
     
+    let audioEngine = AVAudioEngine()
+    let recognizer = SFSpeechRecognizer()
+    let request = SFSpeechAudioBufferRecognitionRequest()
+    var recognizationTask: SFSpeechRecognitionTask?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -30,11 +35,7 @@ class ViewController: UIViewController {
         }
     }
 
-    let audioEngine = AVAudioEngine()
-    let recognizer = SFSpeechRecognizer()
-    let request = SFSpeechAudioBufferRecognitionRequest()
-    var recognizationTask: SFSpeechRecognitionTask?
-    
+   
     func startTranscription() throws {
         print("Transcribing")
         let node = audioEngine.inputNode
@@ -66,9 +67,13 @@ class ViewController: UIViewController {
     
     @IBAction func stopTranscribing(_ sender: Any) {
         print("Released")
-        audioEngine.stop()
+        // When you release, you're finishing, not cancelling.
+        recognizationTask?.finish()
         request.endAudio()
-        recognizationTask?.cancel()
+        audioEngine.stop()
+        // Need to remove the installTap or you will crash on a second record.
+        audioEngine.inputNode.removeTap(onBus: 0)
+        
     }
     
     @IBAction func startTrascribing(_ sender: Any) {
