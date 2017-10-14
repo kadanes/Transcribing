@@ -44,20 +44,22 @@ class ViewController: UIViewController {
             self.request.append(buffer)
         }
         
+        
         audioEngine.prepare()
         
         try audioEngine.start()
         
         recognizationTask =  recognizer?.recognitionTask(with: request, resultHandler: { (result, error) in
-            
-            if let error = error {
-                print("Errror")
-                print("\n\n \(error) \n\n")
+            if result != nil {
                 
-                
-            } else {
-                
-                self.textDisplay.text =  result?.bestTranscription.formattedString
+                if let error = error {
+                    
+                    print("---------------------------------------\n\(error)\n---------------------------------------")
+                    
+                } else {
+                    
+                    self.textDisplay.text =  result?.bestTranscription.formattedString
+                }
             }
         })
     }
@@ -66,9 +68,13 @@ class ViewController: UIViewController {
     
     @IBAction func stopTranscribing(_ sender: Any) {
         print("Released")
+    
+        recognizationTask?.cancel()
         audioEngine.stop()
         request.endAudio()
-        recognizationTask?.cancel()
+        recognizationTask = nil
+        audioEngine.inputNode.removeTap(onBus: 0)
+    
     }
     
     @IBAction func startTrascribing(_ sender: Any) {
